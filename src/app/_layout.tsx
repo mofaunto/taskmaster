@@ -1,11 +1,16 @@
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { useColorScheme } from "react-native";
 
 export default function RootLayout() {
+  const scheme = useColorScheme();
+
   return (
-    <>
-      <Stack />
+    <ThemeProvider value={scheme === "dark" ? DarkTheme : DefaultTheme}>
+      <Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      </Stack>
       <StatusBar style="auto" />
-    </>
+    </ThemeProvider>
   );
 }
