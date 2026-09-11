@@ -104,7 +104,9 @@ export default function TasksScreen() {
       <FlatList
         data={visibleTasks}
         keyExtractor={(task) => task.id}
-        renderItem={({ item }) => <TaskCard task={item} onPress={() => {}} />}
+        renderItem={({ item }) => (
+          <TaskCard task={item} onPress={() => router.push(`/task/${item.id}`)} />
+        )}
         contentContainerStyle={styles.list}
         keyboardShouldPersistTaps="handled"
         ListEmptyComponent={

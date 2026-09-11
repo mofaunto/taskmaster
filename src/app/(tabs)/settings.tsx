@@ -2,6 +2,7 @@ import Constants from "expo-constants";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { OptionSelector } from "@/components/OptionSelector";
+import { Section } from "@/components/Section";
 import { APP_NAME, CANDIDATE_CODE } from "@/constants/app";
 import { useTheme } from "@/hooks/useTheme";
 import { ThemeSetting, useSettings } from "@/store/settingsStore";
@@ -24,32 +25,16 @@ export default function SettingsScreen() {
       style={{ backgroundColor: colors.background }}
       contentContainerStyle={styles.content}
     >
-      <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>
-        APPEARANCE
-      </Text>
-      <View
-        style={[
-          styles.card,
-          { backgroundColor: colors.card, borderColor: colors.border },
-        ]}
-      >
+      <Section title="Appearance">
         <Text style={[styles.label, { color: colors.text }]}>Theme</Text>
         <OptionSelector
           options={themeOptions}
           value={theme}
           onChange={setTheme}
         />
-      </View>
+      </Section>
 
-      <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>
-        ABOUT
-      </Text>
-      <View
-        style={[
-          styles.card,
-          { backgroundColor: colors.card, borderColor: colors.border },
-        ]}
-      >
+      <Section title="About">
         <View style={styles.row}>
           <Text style={[styles.label, { color: colors.text }]}>App</Text>
           <Text style={[styles.value, { color: colors.textMuted }]}>
@@ -70,7 +55,7 @@ export default function SettingsScreen() {
             {CANDIDATE_CODE}
           </Text>
         </View>
-      </View>
+      </Section>
     </ScrollView>
   );
 }
@@ -78,20 +63,7 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   content: {
     padding: 16,
-    gap: 8,
-  },
-  sectionTitle: {
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 0.8,
-    marginTop: 12,
-    marginLeft: 4,
-  },
-  card: {
-    borderRadius: 12,
-    borderWidth: 1,
-    padding: 16,
-    gap: 12,
+    gap: 20,
   },
   row: {
     flexDirection: "row",

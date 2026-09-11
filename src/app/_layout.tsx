@@ -39,6 +39,8 @@ export default function RootLayout() {
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="task/new" options={{ title: "New Task" }} />
+        <Stack.Screen name="task/[id]/index" options={{ title: "Task" }} />
+        <Stack.Screen name="task/[id]/edit" options={{ title: "Edit Task" }} />
       </Stack>
       <StatusBar style={isDark ? "light" : "dark"} />
     </ThemeProvider>
