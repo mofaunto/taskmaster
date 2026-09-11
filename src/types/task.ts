@@ -26,3 +26,12 @@ export type Task = {
   notificationId?: string;
   syncStatus: SyncStatus;
 };
+
+export type TaskInput = {
+  title: string;
+  description: string;
+  dueAt: string;
+  address: string;
+  latitude?: number;
+  longitude?: number;
+};

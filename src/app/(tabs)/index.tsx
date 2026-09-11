@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
   FlatList,
@@ -34,6 +35,7 @@ const sortOptions: { label: string; value: SortBy }[] = [
 ];
 
 export default function TasksScreen() {
+  const router = useRouter();
   const { colors } = useTheme();
   const tasks = useTasks((state) => state.tasks);
 
@@ -121,6 +123,18 @@ export default function TasksScreen() {
           )
         }
       />
+
+      <Pressable
+        onPress={() => router.push("/task/new")}
+        accessibilityRole="button"
+        accessibilityLabel="Create task"
+        style={({ pressed }) => [
+          styles.fab,
+          { backgroundColor: colors.primary, opacity: pressed ? 0.8 : 1 },
+        ]}
+      >
+        <Ionicons name="add" size={30} color="#FFFFFF" />
+      </Pressable>
     </View>
   );
 }
@@ -155,6 +169,22 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: 16,
     paddingTop: 8,
+    paddingBottom: 96,
     gap: 10,
+  },
+  fab: {
+    position: "absolute",
+    right: 20,
+    bottom: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
   },
 });

@@ -4,18 +4,9 @@ import { persist } from "zustand/middleware";
 import { statusLabels } from "@/constants/status";
 import { appStorage } from "@/storage/appStorage";
 import { useHistory } from "@/store/historyStore";
-import { Task, TaskStatus } from "@/types/task";
+import { Task, TaskInput, TaskStatus } from "@/types/task";
 import { formatDateTime, nowIso } from "@/utils/date";
 import { newId } from "@/utils/id";
-
-export type TaskInput = {
-  title: string;
-  description: string;
-  dueAt: string;
-  address: string;
-  latitude?: number;
-  longitude?: number;
-};
 
 type TaskState = {
   tasks: Task[];
