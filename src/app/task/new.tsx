@@ -11,8 +11,8 @@ export default function NewTaskScreen() {
     <TaskForm
       submitLabel="Create task"
       onSubmit={(input) => {
-        addTask(input);
-        router.back();
+        const task = addTask(input);
+        router.replace(`/task/${task.id}`);
       }}
     />
   );

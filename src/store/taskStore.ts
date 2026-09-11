@@ -2,9 +2,10 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 import { statusLabels } from "@/constants/status";
+import { deleteAttachmentFile } from "@/services/attachments";
 import { appStorage } from "@/storage/appStorage";
 import { useHistory } from "@/store/historyStore";
-import { Task, TaskInput, TaskStatus } from "@/types/task";
+import { Attachment, Task, TaskInput, TaskStatus } from "@/types/task";
 import { formatDateTime, nowIso } from "@/utils/date";
 import { newId } from "@/utils/id";
 
@@ -15,6 +16,8 @@ type TaskState = {
   updateTask: (id: string, input: TaskInput) => void;
   setStatus: (id: string, status: TaskStatus) => void;
   deleteTask: (id: string) => void;
+  addAttachment: (taskId: string, attachment: Attachment) => void;
+  removeAttachment: (taskId: string, attachmentId: string) => void;
 };
 
 export const useTasks = create<TaskState>()(
@@ -102,6 +105,8 @@ export const useTasks = create<TaskState>()(
           return;
         }
 
+        task.attachments.forEach(deleteAttachmentFile);
+
         set((state) => ({
           tasks: state.tasks.filter((item) => item.id !== id),
           deletedIds: [...state.deletedIds, id],
@@ -112,6 +117,63 @@ export const useTasks = create<TaskState>()(
           taskTitle: task.title,
           action: "deleted",
           description: "Task deleted",
+        });
+      },
+
+      addAttachment: (taskId, attachment) => {
+        const task = get().tasks.find((item) => item.id === taskId);
+        if (!task) {
+          return;
+        }
+
+        set((state) => ({
+          tasks: state.tasks.map((item) =>
+            item.id === taskId
+              ? {
+                  ...item,
+                  attachments: [...item.attachments, attachment],
+                  updatedAt: nowIso(),
+                  syncStatus: "pending",
+                }
+              : item,
+          ),
+        }));
+
+        useHistory.getState().addEntry({
+          taskId,
+          taskTitle: task.title,
+          action: "attachment_added",
+          description: `Attached ${attachment.name}`,
+        });
+      },
+
+      removeAttachment: (taskId, attachmentId) => {
+        const task = get().tasks.find((item) => item.id === taskId);
+        const attachment = task?.attachments.find((item) => item.id === attachmentId);
+        if (!task || !attachment) {
+          return;
+        }
+
+        deleteAttachmentFile(attachment);
+
+        set((state) => ({
+          tasks: state.tasks.map((item) =>
+            item.id === taskId
+              ? {
+                  ...item,
+                  attachments: item.attachments.filter((a) => a.id !== attachmentId),
+                  updatedAt: nowIso(),
+                  syncStatus: "pending",
+                }
+              : item,
+          ),
+        }));
+
+        useHistory.getState().addEntry({
+          taskId,
+          taskTitle: task.title,
+          action: "attachment_removed",
+          description: `Removed ${attachment.name}`,
         });
       },
     }),

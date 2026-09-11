@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 
+import { AttachmentList } from "@/components/AttachmentList";
 import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
 import { HistoryItem } from "@/components/HistoryItem";
@@ -17,9 +18,10 @@ import { Section } from "@/components/Section";
 import { StatusBadge } from "@/components/StatusBadge";
 import { SyncBadge } from "@/components/SyncBadge";
 import { useTheme } from "@/hooks/useTheme";
+import { pickFile, pickImage, takePhoto } from "@/services/attachments";
 import { useHistory } from "@/store/historyStore";
 import { useTasks } from "@/store/taskStore";
-import { TaskStatus } from "@/types/task";
+import { Attachment, TaskStatus } from "@/types/task";
 import { formatDateTime } from "@/utils/date";
 
 type StatusAction = {
@@ -49,6 +51,8 @@ export default function TaskDetailScreen() {
   const task = useTasks((state) => state.tasks.find((item) => item.id === id));
   const setStatus = useTasks((state) => state.setStatus);
   const deleteTask = useTasks((state) => state.deleteTask);
+  const addAttachment = useTasks((state) => state.addAttachment);
+  const removeAttachment = useTasks((state) => state.removeAttachment);
   const entries = useHistory((state) => state.entries);
 
   if (!task) {
@@ -66,6 +70,19 @@ export default function TaskDetailScreen() {
   const taskHistory = entries.filter((entry) => entry.taskId === task.id);
   const isOpen = task.status === "new" || task.status === "in_progress";
   const overdue = isOpen && new Date(task.dueAt) < new Date();
+
+  const attach = async (pick: () => Promise<Attachment | null>) => {
+    try {
+      const attachment = await pick();
+      if (attachment) {
+        addAttachment(task.id, attachment);
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Something went wrong.";
+      Alert.alert("Could not add attachment", message);
+    }
+  };
 
   const confirmDelete = () => {
     Alert.alert("Delete task?", "This cannot be undone.", [
@@ -137,6 +154,39 @@ export default function TaskDetailScreen() {
         <Text style={[styles.description, { color: colors.text }]}>
           {task.description}
         </Text>
+      </Section>
+
+      <Section title="Attachments">
+        <AttachmentList
+          attachments={task.attachments}
+          onRemove={(attachment) => removeAttachment(task.id, attachment.id)}
+        />
+        <View style={styles.actions}>
+          <View style={styles.actionButton}>
+            <Button
+              title="Camera"
+              icon="camera-outline"
+              variant="secondary"
+              onPress={() => attach(takePhoto)}
+            />
+          </View>
+          <View style={styles.actionButton}>
+            <Button
+              title="Gallery"
+              icon="images-outline"
+              variant="secondary"
+              onPress={() => attach(pickImage)}
+            />
+          </View>
+          <View style={styles.actionButton}>
+            <Button
+              title="File"
+              icon="document-attach-outline"
+              variant="secondary"
+              onPress={() => attach(pickFile)}
+            />
+          </View>
+        </View>
       </Section>
 
       <Section title="Status">
