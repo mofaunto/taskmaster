@@ -8,6 +8,7 @@ const config: ExpoConfig = {
   icon: "./assets/images/icon.png",
   scheme: "taskmaster",
   userInterfaceStyle: "automatic",
+  platforms: ["android", "ios"],
   android: {
     package: "com.khozhimatov.taskmaster",
     adaptiveIcon: {

@@ -1,13 +1,15 @@
-import { useTheme } from "expo-router";
+import { useTheme } from "@/hooks/useTheme";
 import { StyleSheet, Text, View } from "react-native";
 
 export function Placeholder({ title }: { title: string }) {
   const { colors } = useTheme();
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
-      <Text style={styles.hint}>Testing testing!</Text>
+      <Text style={[styles.hint, { color: colors.textMuted }]}>
+        Testing testing!
+      </Text>
     </View>
   );
 }
@@ -25,6 +27,5 @@ const styles = StyleSheet.create({
   },
   hint: {
     fontSize: 14,
-    color: "#888",
   },
 });
