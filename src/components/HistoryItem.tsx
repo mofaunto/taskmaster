@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useTheme } from "@/hooks/useTheme";
 import { HistoryAction, HistoryEntry } from "@/types/history";
@@ -19,9 +19,10 @@ const icons = {
 type Props = {
   entry: HistoryEntry;
   showTaskTitle?: boolean;
+  onPress?: () => void;
 };
 
-export function HistoryItem({ entry, showTaskTitle }: Props) {
+export function HistoryItem({ entry, showTaskTitle, onPress }: Props) {
   const { colors } = useTheme();
 
   const iconColor =
@@ -30,7 +31,13 @@ export function HistoryItem({ entry, showTaskTitle }: Props) {
       : colors.primary;
 
   return (
-    <View style={styles.row}>
+    <Pressable
+      onPress={onPress}
+      disabled={!onPress}
+      accessibilityRole={onPress ? "button" : undefined}
+      accessibilityLabel={onPress ? `Open task ${entry.taskTitle}` : undefined}
+      style={({ pressed }) => [styles.row, { opacity: pressed ? 0.6 : 1 }]}
+    >
       <Ionicons name={icons[entry.action]} size={20} color={iconColor} />
       <View style={styles.body}>
         <Text style={[styles.description, { color: colors.text }]}>
@@ -48,7 +55,10 @@ export function HistoryItem({ entry, showTaskTitle }: Props) {
           {formatDateTime(entry.createdAt)}
         </Text>
       </View>
-    </View>
+      {onPress && (
+        <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+      )}
+    </Pressable>
   );
 }
 
