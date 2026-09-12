@@ -3,6 +3,7 @@ import { ExpoConfig } from "expo/config";
 const config: ExpoConfig = {
   name: "TaskMaster",
   slug: "taskmaster",
+  owner: "mofauntou",
   version: "1.0.0",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
@@ -59,6 +60,11 @@ const config: ExpoConfig = {
   experiments: {
     typedRoutes: true,
     reactCompiler: true,
+  },
+  extra: {
+    eas: {
+      projectId: "e3d8bbad-fdf5-4f92-a2d5-66c72a99514a",
+    },
   },
 };
 

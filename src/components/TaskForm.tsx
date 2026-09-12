@@ -13,7 +13,9 @@ import {
 
 import { Button } from "@/components/Button";
 import { TextField } from "@/components/TextField";
+import { DEMO_SECONDS, REMINDER_MINUTES } from "@/constants/app";
 import { useTheme } from "@/hooks/useTheme";
+import { useSettings } from "@/store/settingsStore";
 import { TaskInput } from "@/types/task";
 import { formatDate, formatTime } from "@/utils/date";
 import { TaskErrors, validateTask } from "@/utils/validateTask";
@@ -33,6 +35,7 @@ type FormValues = {
 
 export function TaskForm({ initialValues, submitLabel, onSubmit }: Props) {
   const { colors } = useTheme();
+  const demoReminders = useSettings((state) => state.demoReminders);
 
   const [values, setValues] = useState<FormValues>({
     title: initialValues?.title ?? "",
@@ -76,6 +79,17 @@ export function TaskForm({ initialValues, submitLabel, onSubmit }: Props) {
     backgroundColor: colors.card,
     borderColor: errors.dueAt ? colors.danger : colors.border,
   };
+
+  const minutesUntilDue = values.dueAt
+    ? (values.dueAt.getTime() - Date.now()) / 60000
+    : null;
+  const reminderNote = demoReminders
+    ? `Demo mode is on: the reminder fires ${DEMO_SECONDS} s after saving.`
+    : minutesUntilDue !== null &&
+        minutesUntilDue > 0 &&
+        minutesUntilDue < REMINDER_MINUTES
+      ? `Less than ${REMINDER_MINUTES} min away: the reminder will fire in about a minute.`
+      : null;
 
   return (
     <KeyboardAvoidingView
@@ -134,6 +148,9 @@ export function TaskForm({ initialValues, submitLabel, onSubmit }: Props) {
           </View>
           {errors.dueAt && (
             <Text style={[styles.error, { color: colors.danger }]}>{errors.dueAt}</Text>
+          )}
+          {!errors.dueAt && reminderNote && (
+            <Text style={[styles.note, { color: colors.warning }]}>{reminderNote}</Text>
           )}
         </View>
 
@@ -198,5 +215,9 @@ const styles = StyleSheet.create({
   },
   error: {
     fontSize: 13,
+  },
+  note: {
+    fontSize: 13,
+    lineHeight: 18,
   },
 });

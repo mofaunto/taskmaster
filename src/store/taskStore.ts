@@ -3,8 +3,13 @@ import { persist } from "zustand/middleware";
 
 import { statusLabels } from "@/constants/status";
 import { deleteAttachmentFile } from "@/services/attachments";
+import {
+  cancelTaskReminder,
+  scheduleTaskReminder,
+} from "@/services/notifications";
 import { appStorage } from "@/storage/appStorage";
 import { useHistory } from "@/store/historyStore";
+import { useSettings } from "@/store/settingsStore";
 import { Attachment, Task, TaskInput, TaskStatus } from "@/types/task";
 import { formatDateTime, nowIso } from "@/utils/date";
 import { newId } from "@/utils/id";
@@ -47,6 +52,7 @@ export const useTasks = create<TaskState>()(
           description: `Created, due ${formatDateTime(task.dueAt)}`,
         });
 
+        updateReminder(task);
         return task;
       },
 
@@ -56,17 +62,15 @@ export const useTasks = create<TaskState>()(
           return;
         }
 
+        const updated: Task = {
+          ...task,
+          ...input,
+          updatedAt: nowIso(),
+          syncStatus: "pending",
+        };
+
         set((state) => ({
-          tasks: state.tasks.map((item) =>
-            item.id === id
-              ? {
-                  ...item,
-                  ...input,
-                  updatedAt: nowIso(),
-                  syncStatus: "pending",
-                }
-              : item,
-          ),
+          tasks: state.tasks.map((item) => (item.id === id ? updated : item)),
         }));
 
         useHistory.getState().addEntry({
@@ -75,6 +79,8 @@ export const useTasks = create<TaskState>()(
           action: "updated",
           description: "Details edited",
         });
+
+        updateReminder(updated);
       },
 
       setStatus: (id, status) => {
@@ -83,12 +89,15 @@ export const useTasks = create<TaskState>()(
           return;
         }
 
+        const updated: Task = {
+          ...task,
+          status,
+          updatedAt: nowIso(),
+          syncStatus: "pending",
+        };
+
         set((state) => ({
-          tasks: state.tasks.map((item) =>
-            item.id === id
-              ? { ...item, status, updatedAt: nowIso(), syncStatus: "pending" }
-              : item,
-          ),
+          tasks: state.tasks.map((item) => (item.id === id ? updated : item)),
         }));
 
         useHistory.getState().addEntry({
@@ -97,6 +106,8 @@ export const useTasks = create<TaskState>()(
           action: "status_changed",
           description: `${statusLabels[task.status]} → ${statusLabels[status]}`,
         });
+
+        updateReminder(updated);
       },
 
       deleteTask: (id) => {
@@ -106,6 +117,9 @@ export const useTasks = create<TaskState>()(
         }
 
         task.attachments.forEach(deleteAttachmentFile);
+        if (task.notificationId) {
+          cancelTaskReminder(task.notificationId);
+        }
 
         set((state) => ({
           tasks: state.tasks.filter((item) => item.id !== id),
@@ -149,7 +163,9 @@ export const useTasks = create<TaskState>()(
 
       removeAttachment: (taskId, attachmentId) => {
         const task = get().tasks.find((item) => item.id === taskId);
-        const attachment = task?.attachments.find((item) => item.id === attachmentId);
+        const attachment = task?.attachments.find(
+          (item) => item.id === attachmentId,
+        );
         if (!task || !attachment) {
           return;
         }
@@ -161,7 +177,9 @@ export const useTasks = create<TaskState>()(
             item.id === taskId
               ? {
                   ...item,
-                  attachments: item.attachments.filter((a) => a.id !== attachmentId),
+                  attachments: item.attachments.filter(
+                    (a) => a.id !== attachmentId,
+                  ),
                   updatedAt: nowIso(),
                   syncStatus: "pending",
                 }
@@ -187,3 +205,21 @@ export const useTasks = create<TaskState>()(
     },
   ),
 );
+
+async function updateReminder(task: Task) {
+  if (task.notificationId) {
+    await cancelTaskReminder(task.notificationId);
+  }
+
+  const isOpen = task.status === "new" || task.status === "in_progress";
+  const demoMode = useSettings.getState().demoReminders;
+  const notificationId = isOpen
+    ? await scheduleTaskReminder(task, demoMode)
+    : undefined;
+
+  useTasks.setState((state) => ({
+    tasks: state.tasks.map((item) =>
+      item.id === task.id ? { ...item, notificationId } : item,
+    ),
+  }));
+}
