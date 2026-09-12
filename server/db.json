@@ -21,6 +21,28 @@
       ],
       "createdAt": "2026-09-12T06:00:55.287Z",
       "updatedAt": "2026-09-12T06:01:05.987Z"
+    },
+    {
+      "title": "Testing final build",
+      "description": "Testing the client server connection on a separate android phone",
+      "address": "Dom Terassa, JFVV+R8F, Булак башни, Andijon, Andijon Viloyati, Uzbekistan",
+      "dueAt": "2026-09-13T08:25:00.000Z",
+      "latitude": 40.64455614452798,
+      "longitude": 72.49322175979614,
+      "id": "8d0ff7b2-ad34-4d08-9411-c63681f0f78e",
+      "status": "in_progress",
+      "attachments": [
+        {
+          "id": "f444aaef-32a6-4ca5-bc5d-0681380d0d8d",
+          "uri": "file:///data/user/0/com.khozhimatov.taskmaster/files/attachments/f444aaef-32a6-4ca5-bc5d-0681380d0d8d-1e922a35-f404-4f82-b766-b15cd8fc5771.jpeg",
+          "name": "1e922a35-f404-4f82-b766-b15cd8fc5771.jpeg",
+          "mimeType": "image/jpeg",
+          "size": 387594,
+          "kind": "image"
+        }
+      ],
+      "createdAt": "2026-09-12T08:25:53.783Z",
+      "updatedAt": "2026-09-12T08:26:16.730Z"
     }
   ]
 }

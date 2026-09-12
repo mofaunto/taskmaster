@@ -23,6 +23,14 @@ const config: ExpoConfig = {
   plugins: [
     "expo-router",
     [
+      "expo-build-properties",
+      {
+        android: {
+          usesCleartextTraffic: true,
+        },
+      },
+    ],
+    [
       "expo-splash-screen",
       {
         backgroundColor: "#208AEF",
