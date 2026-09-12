@@ -27,6 +27,8 @@ export type Task = {
   syncStatus: SyncStatus;
 };
 
+export type ServerTask = Omit<Task, "notificationId" | "syncStatus">;
+
 export type TaskInput = {
   title: string;
   description: string;

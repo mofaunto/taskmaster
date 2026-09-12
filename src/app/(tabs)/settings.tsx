@@ -1,17 +1,29 @@
 import Constants from "expo-constants";
 import { useEffect, useState } from "react";
-import { Linking, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
+import {
+  Alert,
+  Linking,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  View,
+} from "react-native";
 
 import { Button } from "@/components/Button";
 import { OptionSelector } from "@/components/OptionSelector";
 import { Section } from "@/components/Section";
+import { TextField } from "@/components/TextField";
 import { APP_NAME, CANDIDATE_CODE, DEMO_SECONDS } from "@/constants/app";
 import { useTheme } from "@/hooks/useTheme";
+import { ping } from "@/services/api";
 import {
   getNotificationPermission,
   requestNotificationPermission,
 } from "@/services/notifications";
+import { syncTasks } from "@/services/sync";
 import { ThemeSetting, useSettings } from "@/store/settingsStore";
+import { formatDateTime } from "@/utils/date";
 
 const themeOptions: { label: string; value: ThemeSetting }[] = [
   { label: "System", value: "system" },
@@ -25,8 +37,37 @@ export default function SettingsScreen() {
   const setTheme = useSettings((state) => state.setTheme);
   const demoReminders = useSettings((state) => state.demoReminders);
   const setDemoReminders = useSettings((state) => state.setDemoReminders);
+  const apiUrl = useSettings((state) => state.apiUrl);
+  const setApiUrl = useSettings((state) => state.setApiUrl);
+  const lastSyncAt = useSettings((state) => state.lastSyncAt);
 
   const [notificationsAllowed, setNotificationsAllowed] = useState<boolean | null>(null);
+  const [busy, setBusy] = useState<"test" | "sync" | null>(null);
+
+  async function testConnection() {
+    setBusy("test");
+    try {
+      await ping();
+      Alert.alert("Connected", "The server answered.");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      Alert.alert("Not connected", message);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function syncNow() {
+    setBusy("sync");
+    const result = await syncTasks();
+    setBusy(null);
+
+    if (result.ok) {
+      Alert.alert("Synced", `${result.sent} sent, ${result.received} received.`);
+    } else {
+      Alert.alert("Sync failed", result.error);
+    }
+  }
 
   useEffect(() => {
     getNotificationPermission().then((status) =>
@@ -95,6 +136,40 @@ export default function SettingsScreen() {
         </View>
       </Section>
 
+      <Section title="Server">
+        <TextField
+          label="Server URL"
+          value={apiUrl}
+          onChangeText={setApiUrl}
+          placeholder="http://192.168.1.10:3000"
+          autoCapitalize="none"
+          autoCorrect={false}
+          keyboardType="url"
+        />
+        <Text style={[styles.hint, { color: colors.textMuted }]}>
+          Use your computer&apos;s LAN address, not localhost. Last sync:{" "}
+          {lastSyncAt ? formatDateTime(lastSyncAt) : "never"}
+        </Text>
+        <View style={styles.row}>
+          <View style={styles.rowButton}>
+            <Button
+              title={busy === "test" ? "Testing…" : "Test connection"}
+              variant="secondary"
+              onPress={testConnection}
+              disabled={busy !== null}
+            />
+          </View>
+          <View style={styles.rowButton}>
+            <Button
+              title={busy === "sync" ? "Syncing…" : "Sync now"}
+              icon="sync-outline"
+              onPress={syncNow}
+              disabled={busy !== null}
+            />
+          </View>
+        </View>
+      </Section>
+
       <Section title="About">
         <View style={styles.row}>
           <Text style={[styles.label, { color: colors.text }]}>App</Text>
@@ -135,6 +210,9 @@ const styles = StyleSheet.create({
   rowText: {
     flex: 1,
     gap: 2,
+  },
+  rowButton: {
+    flex: 1,
   },
   label: {
     fontSize: 16,

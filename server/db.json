@@ -1,0 +1,26 @@
+{
+  "tasks": [
+    {
+      "title": "Testing JSON server sync",
+      "description": "Testing whether db.json will get populated with the task information",
+      "address": "Dom Terassa, JFVV+R8F, Булак башни, Andijon, Andijon Viloyati, Uzbekistan",
+      "dueAt": "2026-09-13T06:00:00.000Z",
+      "latitude": 40.64455614452798,
+      "longitude": 72.49322175979614,
+      "id": "7b62922c-50ce-45e1-a25d-4229b0417590",
+      "status": "new",
+      "attachments": [
+        {
+          "id": "9acb94ea-0bfb-417a-a0bd-d9bb929e3d91",
+          "uri": "file:///data/user/0/com.khozhimatov.taskmaster/files/attachments/9acb94ea-0bfb-417a-a0bd-d9bb929e3d91-93154b19-ebd4-429e-80db-672fbe6fc46d.jpeg",
+          "name": "93154b19-ebd4-429e-80db-672fbe6fc46d.jpeg",
+          "mimeType": "image/jpeg",
+          "size": 1576604,
+          "kind": "image"
+        }
+      ],
+      "createdAt": "2026-09-12T06:00:55.287Z",
+      "updatedAt": "2026-09-12T06:01:05.987Z"
+    }
+  ]
+}

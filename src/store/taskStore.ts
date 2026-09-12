@@ -17,12 +17,15 @@ import { newId } from "@/utils/id";
 type TaskState = {
   tasks: Task[];
   deletedIds: string[]; // if device is offline, sync later to delete
+  hydrated: boolean;
   addTask: (input: TaskInput) => Task;
   updateTask: (id: string, input: TaskInput) => void;
   setStatus: (id: string, status: TaskStatus) => void;
   deleteTask: (id: string) => void;
   addAttachment: (taskId: string, attachment: Attachment) => void;
   removeAttachment: (taskId: string, attachmentId: string) => void;
+  applySyncResult: (tasks: Task[], deletedIds: string[]) => void;
+  markPendingAsFailed: () => void;
 };
 
 export const useTasks = create<TaskState>()(
@@ -30,6 +33,7 @@ export const useTasks = create<TaskState>()(
     (set, get) => ({
       tasks: [],
       deletedIds: [],
+      hydrated: false,
 
       addTask: (input) => {
         const now = nowIso();
@@ -194,6 +198,32 @@ export const useTasks = create<TaskState>()(
           description: `Removed ${attachment.name}`,
         });
       },
+
+      applySyncResult: (tasks, deletedIds) => {
+        const before = new Map(get().tasks.map((task) => [task.id, task]));
+
+        set({ tasks, deletedIds });
+
+        tasks.forEach((task) => {
+          const previous = before.get(task.id);
+          if (
+            !previous ||
+            previous.dueAt !== task.dueAt ||
+            previous.status !== task.status
+          ) {
+            updateReminder(task);
+          }
+        });
+      },
+
+      markPendingAsFailed: () =>
+        set((state) => ({
+          tasks: state.tasks.map((task) =>
+            task.syncStatus === "pending"
+              ? { ...task, syncStatus: "failed" }
+              : task,
+          ),
+        })),
     }),
     {
       name: "taskmaster-tasks",
@@ -202,6 +232,9 @@ export const useTasks = create<TaskState>()(
         tasks: state.tasks,
         deletedIds: state.deletedIds,
       }),
+      onRehydrateStorage: () => () => {
+        useTasks.setState({ hydrated: true });
+      },
     },
   ),
 );

@@ -13,6 +13,7 @@ import {
 import { EmptyState } from "@/components/EmptyState";
 import { FilterChip } from "@/components/FilterChip";
 import { OptionSelector } from "@/components/OptionSelector";
+import { SyncBanner } from "@/components/SyncBanner";
 import { TaskCard } from "@/components/TaskCard";
 import { statusLabels, statusOrder } from "@/constants/status";
 import { useTheme } from "@/hooks/useTheme";
@@ -99,6 +100,8 @@ export default function TasksScreen() {
           value={sortBy}
           onChange={setSortBy}
         />
+
+        <SyncBanner />
       </View>
 
       <FlatList

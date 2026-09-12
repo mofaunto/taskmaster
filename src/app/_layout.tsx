@@ -10,17 +10,23 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 
+import { useNetworkSync } from "@/hooks/useNetworkSync";
 import { useTheme } from "@/hooks/useTheme";
 import { setupNotifications } from "@/services/notifications";
 import { useSettings } from "@/store/settingsStore";
+import { useTasks } from "@/store/taskStore";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const router = useRouter();
   const { colors, isDark } = useTheme();
-  const hydrated = useSettings((state) => state.hydrated);
+  const settingsReady = useSettings((state) => state.hydrated);
+  const tasksReady = useTasks((state) => state.hydrated);
+  const hydrated = settingsReady && tasksReady;
   const notificationResponse = useLastNotificationResponse();
+
+  useNetworkSync();
 
   useEffect(() => {
     setupNotifications();
