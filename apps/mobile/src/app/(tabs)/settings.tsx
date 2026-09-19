@@ -14,7 +14,7 @@ import { Button } from "@/components/Button";
 import { OptionSelector } from "@/components/OptionSelector";
 import { Section } from "@/components/Section";
 import { TextField } from "@/components/TextField";
-import { APP_NAME, CANDIDATE_CODE, DEMO_SECONDS } from "@/constants/app";
+import { APP_NAME, DEMO_SECONDS } from "@/constants/app";
 import { useTheme } from "@/hooks/useTheme";
 import { ping } from "@/services/api";
 import {
@@ -181,14 +181,6 @@ export default function SettingsScreen() {
           <Text style={[styles.label, { color: colors.text }]}>Version</Text>
           <Text style={[styles.value, { color: colors.textMuted }]}>
             {version}
-          </Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={[styles.label, { color: colors.text }]}>
-            Candidate code
-          </Text>
-          <Text style={[styles.value, { color: colors.primary }]}>
-            {CANDIDATE_CODE}
           </Text>
         </View>
       </Section>

@@ -17,8 +17,8 @@ _.p8
 _.p12
 _.key
 \*.mobileprovision
-/ios
-/android
+apps/mobile/ios/
+apps/mobile/android/
 
 # metro
 
@@ -38,3 +38,9 @@ yarn-error.\*
 # typescript
 
 \*.tsbuildinfo
+
+# not part of the mobile build
+
+apps/api/
+packages/shared/node_modules/
+.git/

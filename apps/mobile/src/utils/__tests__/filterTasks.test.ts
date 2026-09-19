@@ -1,8 +1,16 @@
 import { makeTask } from "@/test/makeTask";
 import { filterTasks } from "@/utils/filterTasks";
 
-const boiler = makeTask({ id: "boiler", title: "Check the boiler", status: "new" });
-const roof = makeTask({ id: "roof", title: "Fix roof leak", status: "completed" });
+const boiler = makeTask({
+  id: "boiler",
+  title: "Check the boiler",
+  status: "new",
+});
+const roof = makeTask({
+  id: "roof",
+  title: "Fix roof leak",
+  status: "completed",
+});
 const fence = makeTask({ id: "fence", title: "Paint fence", status: "new" });
 const all = [boiler, roof, fence];
 
@@ -10,7 +18,11 @@ const ids = (tasks: ReturnType<typeof makeTask>[]) => tasks.map((t) => t.id);
 
 describe("filterTasks", () => {
   it("returns everything with no query and the 'all' filter", () => {
-    expect(ids(filterTasks(all, "", "all"))).toEqual(["boiler", "roof", "fence"]);
+    expect(ids(filterTasks(all, "", "all"))).toEqual([
+      "boiler",
+      "roof",
+      "fence",
+    ]);
   });
 
   it("matches the title case-insensitively and ignores surrounding spaces", () => {
