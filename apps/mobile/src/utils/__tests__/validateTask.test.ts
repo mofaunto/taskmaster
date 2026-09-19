@@ -28,24 +28,24 @@ describe("validateTask", () => {
       description: "",
       address: " ",
     });
-    expect(errors.title).toBe("Title is required");
-    expect(errors.description).toBe("Description is required");
-    expect(errors.address).toBe("Address is required");
+    expect(errors.title).toBe("validation.titleRequired");
+    expect(errors.description).toBe("validation.descriptionRequired");
+    expect(errors.address).toBe("validation.addressRequired");
   });
 
   it("requires a due date", () => {
     expect(validateTask({ ...valid, dueAt: "" }).dueAt).toBe(
-      "Due date and time are required",
+      "validation.dueRequired",
     );
     expect(validateTask({ ...valid, dueAt: "not a date" }).dueAt).toBe(
-      "Due date and time are required",
+      "validation.dueRequired",
     );
   });
 
   it("rejects a due date in the past", () => {
     const past = "2026-09-15T11:59:00.000Z";
     expect(validateTask({ ...valid, dueAt: past }).dueAt).toBe(
-      "Due date must be in the future",
+      "validation.dueFuture",
     );
   });
 
@@ -58,7 +58,7 @@ describe("validateTask", () => {
     const past = "2026-09-15T11:59:00.000Z";
     const original = "2026-09-14T09:00:00.000Z";
     expect(validateTask({ ...valid, dueAt: past }, original).dueAt).toBe(
-      "Due date must be in the future",
+      "validation.dueFuture",
     );
   });
 });

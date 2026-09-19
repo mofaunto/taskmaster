@@ -1,4 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
+import { TFunction } from "i18next";
+import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useTheme } from "@/hooks/useTheme";
@@ -23,6 +25,7 @@ type Props = {
 };
 
 export function HistoryItem({ entry, showTaskTitle, onPress }: Props) {
+  const { t, i18n } = useTranslation();
   const { colors } = useTheme();
 
   const iconColor =
@@ -35,13 +38,15 @@ export function HistoryItem({ entry, showTaskTitle, onPress }: Props) {
       onPress={onPress}
       disabled={!onPress}
       accessibilityRole={onPress ? "button" : undefined}
-      accessibilityLabel={onPress ? `Open task ${entry.taskTitle}` : undefined}
+      accessibilityLabel={
+        onPress ? t("tasks.openTask", { title: entry.taskTitle }) : undefined
+      }
       style={({ pressed }) => [styles.row, { opacity: pressed ? 0.6 : 1 }]}
     >
       <Ionicons name={icons[entry.action]} size={20} color={iconColor} />
       <View style={styles.body}>
         <Text style={[styles.description, { color: colors.text }]}>
-          {entry.description}
+          {describeEntry(entry, t, i18n.language)}
         </Text>
         {showTaskTitle && (
           <Text
@@ -52,7 +57,7 @@ export function HistoryItem({ entry, showTaskTitle, onPress }: Props) {
           </Text>
         )}
         <Text style={[styles.time, { color: colors.textMuted }]}>
-          {formatDateTime(entry.createdAt)}
+          {formatDateTime(entry.createdAt, i18n.language)}
         </Text>
       </View>
       {onPress && (
@@ -60,6 +65,31 @@ export function HistoryItem({ entry, showTaskTitle, onPress }: Props) {
       )}
     </Pressable>
   );
+}
+
+function describeEntry(
+  entry: HistoryEntry,
+  t: TFunction,
+  locale: string,
+): string {
+  if (!entry.meta) {
+    return entry.description ?? t(`history.${entry.action}`);
+  }
+
+  if (entry.action === "status_changed") {
+    return t("history.status_changed", {
+      from: t(`status.${entry.meta.from}`),
+      to: t(`status.${entry.meta.to}`),
+    });
+  }
+
+  if (entry.action === "created") {
+    return t("history.created", {
+      due: formatDateTime(String(entry.meta.due), locale),
+    });
+  }
+
+  return t(`history.${entry.action}`, entry.meta);
 }
 
 const styles = StyleSheet.create({

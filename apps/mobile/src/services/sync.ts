@@ -1,3 +1,4 @@
+import i18n from "@/i18n";
 import * as api from "@/services/api";
 import { useHistory } from "@/store/historyStore";
 import { useSettings } from "@/store/settingsStore";
@@ -14,10 +15,10 @@ let syncing = false;
 
 export async function syncTasks(): Promise<SyncResult> {
   if (syncing) {
-    return { ok: false, error: "Sync already running" };
+    return { ok: false, error: i18n.t("sync.alreadyRunning") };
   }
   if (useSettings.getState().apiUrl.trim() === "") {
-    return { ok: false, error: "No server URL set" };
+    return { ok: false, error: i18n.t("sync.noServerUrl") };
   }
 
   syncing = true;
@@ -63,27 +64,32 @@ export async function syncTasks(): Promise<SyncResult> {
     useSettings.getState().setLastSyncAt(nowIso());
 
     if (failed > 0) {
-      logSync("sync_failed", `${failed} task(s) could not be sent`);
-      return { ok: false, error: `${failed} task(s) could not be sent` };
+      const error = i18n.t("sync.sendFailed", { count: failed });
+      logSync("sync_failed", { error });
+      return { ok: false, error };
     }
 
-    logSync("synced", `Synced: ${sent} sent, ${merged.received} received`);
+    logSync("synced", { sent, received: merged.received });
     return { ok: true, sent, received: merged.received };
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
+    const message =
+      error instanceof Error ? error.message : i18n.t("common.unknownError");
     useTasks.getState().markPendingAsFailed();
-    logSync("sync_failed", `Sync failed: ${message}`);
+    logSync("sync_failed", { error: message });
     return { ok: false, error: message };
   } finally {
     syncing = false;
   }
 }
 
-function logSync(action: "synced" | "sync_failed", description: string) {
+function logSync(
+  action: "synced" | "sync_failed",
+  meta: Record<string, string | number>,
+) {
   useHistory.getState().addEntry({
     taskId: null,
-    taskTitle: "Server sync",
+    taskTitle: i18n.t("history.serverSync"),
     action,
-    description,
+    meta,
   });
 }

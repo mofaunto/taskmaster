@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { ComponentProps } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   Pressable,
@@ -25,27 +26,48 @@ import { Attachment, TaskStatus } from "@/types/task";
 import { formatDateTime } from "@/utils/date";
 
 type StatusAction = {
-  label: string;
+  labelKey: string;
   status: TaskStatus;
   variant: "primary" | "secondary";
 };
 
 const statusActions: Record<TaskStatus, StatusAction[]> = {
   new: [
-    { label: "Start", status: "in_progress", variant: "primary" },
-    { label: "Cancel", status: "cancelled", variant: "secondary" },
+    {
+      labelKey: "statusAction.start",
+      status: "in_progress",
+      variant: "primary",
+    },
+    {
+      labelKey: "statusAction.cancel",
+      status: "cancelled",
+      variant: "secondary",
+    },
   ],
   in_progress: [
-    { label: "Complete", status: "completed", variant: "primary" },
-    { label: "Cancel", status: "cancelled", variant: "secondary" },
+    {
+      labelKey: "statusAction.complete",
+      status: "completed",
+      variant: "primary",
+    },
+    {
+      labelKey: "statusAction.cancel",
+      status: "cancelled",
+      variant: "secondary",
+    },
   ],
-  completed: [{ label: "Reopen", status: "new", variant: "secondary" }],
-  cancelled: [{ label: "Reopen", status: "new", variant: "secondary" }],
+  completed: [
+    { labelKey: "statusAction.reopen", status: "new", variant: "secondary" },
+  ],
+  cancelled: [
+    { labelKey: "statusAction.reopen", status: "new", variant: "secondary" },
+  ],
 };
 
 export default function TaskDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { t, i18n } = useTranslation();
   const { colors } = useTheme();
 
   const task = useTasks((state) => state.tasks.find((item) => item.id === id));
@@ -60,8 +82,8 @@ export default function TaskDetailScreen() {
       <View style={[styles.screen, { backgroundColor: colors.background }]}>
         <EmptyState
           icon="alert-circle-outline"
-          title="Task not found"
-          message="It may have been deleted."
+          title={t("task.notFoundTitle")}
+          message={t("task.notFoundMessage")}
         />
       </View>
     );
@@ -79,16 +101,16 @@ export default function TaskDetailScreen() {
       }
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Something went wrong.";
-      Alert.alert("Could not add attachment", message);
+        error instanceof Error ? error.message : t("common.unknownError");
+      Alert.alert(t("attachments.addFailedTitle"), message);
     }
   };
 
   const confirmDelete = () => {
-    Alert.alert("Delete task?", "This cannot be undone.", [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(t("task.deleteTitle"), t("task.deleteMessage"), [
+      { text: t("common.cancel"), style: "cancel" },
       {
-        text: "Delete",
+        text: t("common.delete"),
         style: "destructive",
         onPress: () => {
           deleteTask(task.id);
@@ -109,7 +131,7 @@ export default function TaskDetailScreen() {
             <Pressable
               onPress={() => router.push(`/task/${task.id}/edit`)}
               accessibilityRole="button"
-              accessibilityLabel="Edit task"
+              accessibilityLabel={t("task.editTask")}
               hitSlop={8}
             >
               <Ionicons
@@ -130,10 +152,13 @@ export default function TaskDetailScreen() {
         </View>
       </View>
 
-      <Section title="Details">
+      <Section title={t("task.details")}>
         <DetailRow
           icon="calendar-outline"
-          text={formatDateTime(task.dueAt) + (overdue ? " · Overdue" : "")}
+          text={
+            formatDateTime(task.dueAt, i18n.language) +
+            (overdue ? ` · ${t("tasks.overdue")}` : "")
+          }
           color={overdue ? colors.danger : colors.text}
         />
         <DetailRow
@@ -150,13 +175,13 @@ export default function TaskDetailScreen() {
         )}
       </Section>
 
-      <Section title="Description">
+      <Section title={t("task.description")}>
         <Text style={[styles.description, { color: colors.text }]}>
           {task.description}
         </Text>
       </Section>
 
-      <Section title="Attachments">
+      <Section title={t("task.attachments")}>
         <AttachmentList
           attachments={task.attachments}
           onRemove={(attachment) => removeAttachment(task.id, attachment.id)}
@@ -164,7 +189,7 @@ export default function TaskDetailScreen() {
         <View style={styles.actions}>
           <View style={styles.actionButton}>
             <Button
-              title="Camera"
+              title={t("attachments.camera")}
               icon="camera-outline"
               variant="secondary"
               onPress={() => attach(takePhoto)}
@@ -172,7 +197,7 @@ export default function TaskDetailScreen() {
           </View>
           <View style={styles.actionButton}>
             <Button
-              title="Gallery"
+              title={t("attachments.gallery")}
               icon="images-outline"
               variant="secondary"
               onPress={() => attach(pickImage)}
@@ -180,7 +205,7 @@ export default function TaskDetailScreen() {
           </View>
           <View style={styles.actionButton}>
             <Button
-              title="File"
+              title={t("attachments.file")}
               icon="document-attach-outline"
               variant="secondary"
               onPress={() => attach(pickFile)}
@@ -189,12 +214,12 @@ export default function TaskDetailScreen() {
         </View>
       </Section>
 
-      <Section title="Status">
+      <Section title={t("task.status")}>
         <View style={styles.actions}>
           {statusActions[task.status].map((action) => (
             <View key={action.status} style={styles.actionButton}>
               <Button
-                title={action.label}
+                title={t(action.labelKey)}
                 variant={action.variant}
                 onPress={() => setStatus(task.id, action.status)}
               />
@@ -203,14 +228,14 @@ export default function TaskDetailScreen() {
         </View>
       </Section>
 
-      <Section title="History">
+      <Section title={t("task.history")}>
         {taskHistory.map((entry) => (
           <HistoryItem key={entry.id} entry={entry} />
         ))}
       </Section>
 
       <Button
-        title="Delete task"
+        title={t("task.deleteTask")}
         variant="danger"
         icon="trash-outline"
         onPress={confirmDelete}

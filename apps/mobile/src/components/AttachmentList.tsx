@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import * as Sharing from "expo-sharing";
+import { useTranslation } from "react-i18next";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useTheme } from "@/hooks/useTheme";
@@ -23,31 +24,39 @@ function formatSize(bytes?: number) {
 }
 
 export function AttachmentList({ attachments, onRemove }: Props) {
+  const { t } = useTranslation();
   const { colors } = useTheme();
 
   async function open(attachment: Attachment) {
     if (!attachmentExists(attachment)) {
-      Alert.alert("File unavailable", "This file is no longer on the device.");
+      Alert.alert(t("attachments.missingTitle"), t("attachments.missingMessage"));
       return;
     }
     try {
       await Sharing.shareAsync(attachment.uri, { mimeType: attachment.mimeType });
     } catch {
-      Alert.alert("Could not open file", "No app on this phone can open it.");
+      Alert.alert(
+        t("attachments.openFailedTitle"),
+        t("attachments.openFailedMessage"),
+      );
     }
   }
 
   function confirmRemove(attachment: Attachment) {
-    Alert.alert("Remove attachment?", attachment.name, [
-      { text: "Cancel", style: "cancel" },
-      { text: "Remove", style: "destructive", onPress: () => onRemove(attachment) },
+    Alert.alert(t("attachments.removeTitle"), attachment.name, [
+      { text: t("common.cancel"), style: "cancel" },
+      {
+        text: t("common.remove"),
+        style: "destructive",
+        onPress: () => onRemove(attachment),
+      },
     ]);
   }
 
   if (attachments.length === 0) {
     return (
       <Text style={[styles.empty, { color: colors.textMuted }]}>
-        No attachments yet
+        {t("attachments.none")}
       </Text>
     );
   }
@@ -66,7 +75,9 @@ export function AttachmentList({ attachments, onRemove }: Props) {
                 key={attachment.id}
                 onPress={() => open(attachment)}
                 accessibilityRole="imagebutton"
-                accessibilityLabel={`Open image ${attachment.name}`}
+                accessibilityLabel={t("attachments.openImage", {
+                  name: attachment.name,
+                })}
                 style={[styles.tile, { backgroundColor: colors.background }]}
               >
                 {exists ? (
@@ -78,8 +89,10 @@ export function AttachmentList({ attachments, onRemove }: Props) {
                 ) : (
                   <View style={styles.missing}>
                     <Ionicons name="image-outline" size={26} color={colors.textMuted} />
-                    <Text style={[styles.missingText, { color: colors.textMuted }]}>
-                      Unavailable
+                    <Text
+                      style={[styles.missingText, { color: colors.textMuted }]}
+                    >
+                      {t("attachments.unavailable")}
                     </Text>
                   </View>
                 )}
@@ -97,7 +110,9 @@ export function AttachmentList({ attachments, onRemove }: Props) {
             key={attachment.id}
             onPress={() => open(attachment)}
             accessibilityRole="button"
-            accessibilityLabel={`Open file ${attachment.name}`}
+            accessibilityLabel={t("attachments.openFile", {
+              name: attachment.name,
+            })}
             style={[styles.fileRow, { borderColor: colors.border }]}
           >
             <Ionicons
@@ -110,12 +125,16 @@ export function AttachmentList({ attachments, onRemove }: Props) {
                 {attachment.name}
               </Text>
               <Text style={[styles.fileMeta, { color: colors.textMuted }]}>
-                {exists ? formatSize(attachment.size) : "File unavailable"}
+                {exists
+                  ? formatSize(attachment.size)
+                  : t("attachments.fileUnavailable")}
               </Text>
             </View>
             <Pressable
               onPress={() => confirmRemove(attachment)}
-              accessibilityLabel={`Remove ${attachment.name}`}
+              accessibilityLabel={t("attachments.removeLabel", {
+                name: attachment.name,
+              })}
               hitSlop={8}
             >
               <Ionicons name="close-circle" size={22} color={colors.textMuted} />
@@ -128,10 +147,12 @@ export function AttachmentList({ attachments, onRemove }: Props) {
 }
 
 function RemoveButton({ onPress }: { onPress: () => void }) {
+  const { t } = useTranslation();
+
   return (
     <Pressable
       onPress={onPress}
-      accessibilityLabel="Remove attachment"
+      accessibilityLabel={t("attachments.removeAttachment")}
       hitSlop={8}
       style={styles.removeButton}
     >

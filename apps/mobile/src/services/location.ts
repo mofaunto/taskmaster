@@ -1,5 +1,7 @@
 import * as Location from "expo-location";
 
+import i18n from "@/i18n";
+
 export type Coordinates = {
   latitude: number;
   longitude: number;
@@ -12,9 +14,7 @@ export type PickedLocation = Coordinates & {
 export async function getCurrentPosition(): Promise<Coordinates> {
   const permission = await Location.requestForegroundPermissionsAsync();
   if (!permission.granted) {
-    throw new Error(
-      "Location access was denied. You can enable it in Settings.",
-    );
+    throw new Error(i18n.t("location.denied"));
   }
 
   const position = await Location.getCurrentPositionAsync({

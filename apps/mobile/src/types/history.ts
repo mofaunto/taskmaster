@@ -13,6 +13,7 @@ export type HistoryEntry = {
   taskId: string | null;
   taskTitle: string;
   action: HistoryAction;
-  description: string;
+  meta?: Record<string, string | number>;
+  description?: string;
   createdAt: string;
 };

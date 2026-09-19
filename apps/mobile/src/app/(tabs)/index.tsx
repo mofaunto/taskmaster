@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   FlatList,
   Pressable,
@@ -15,29 +16,30 @@ import { FilterChip } from "@/components/FilterChip";
 import { OptionSelector } from "@/components/OptionSelector";
 import { SyncBanner } from "@/components/SyncBanner";
 import { TaskCard } from "@/components/TaskCard";
-import { statusLabels, statusOrder } from "@/constants/status";
+import { statusOrder } from "@/constants/status";
 import { useTheme } from "@/hooks/useTheme";
 import { useTasks } from "@/store/taskStore";
 import { filterTasks, StatusFilter } from "@/utils/filterTasks";
 import { SortBy, sortTasks } from "@/utils/sortTasks";
 
-const statusFilters: { label: string; value: StatusFilter }[] = [
-  { label: "All", value: "all" },
-  ...statusOrder.map((status) => ({
-    label: statusLabels[status],
-    value: status,
-  })),
-];
-
-const sortOptions: { label: string; value: SortBy }[] = [
-  { label: "Added", value: "created" },
-  { label: "Due", value: "due" },
-  { label: "Status", value: "status" },
-];
-
 export default function TasksScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { colors } = useTheme();
+
+  const statusFilters: { label: string; value: StatusFilter }[] = [
+    { label: t("tasks.filterAll"), value: "all" },
+    ...statusOrder.map((status) => ({
+      label: t(`status.${status}`),
+      value: status as StatusFilter,
+    })),
+  ];
+
+  const sortOptions: { label: string; value: SortBy }[] = [
+    { label: t("tasks.sortAdded"), value: "created" },
+    { label: t("tasks.sortDue"), value: "due" },
+    { label: t("tasks.sortStatus"), value: "status" },
+  ];
   const tasks = useTasks((state) => state.tasks);
 
   const [query, setQuery] = useState("");
@@ -59,16 +61,16 @@ export default function TasksScreen() {
           <TextInput
             value={query}
             onChangeText={setQuery}
-            placeholder="Search by title"
+            placeholder={t("tasks.searchPlaceholder")}
             placeholderTextColor={colors.textMuted}
             style={[styles.searchInput, { color: colors.text }]}
             returnKeyType="search"
-            accessibilityLabel="Search tasks by title"
+            accessibilityLabel={t("tasks.searchLabel")}
           />
           {query !== "" && (
             <Pressable
               onPress={() => setQuery("")}
-              accessibilityLabel="Clear search"
+              accessibilityLabel={t("tasks.clearSearch")}
               hitSlop={8}
             >
               <Ionicons
@@ -116,14 +118,14 @@ export default function TasksScreen() {
           tasks.length === 0 ? (
             <EmptyState
               icon="clipboard-outline"
-              title="No tasks yet"
-              message="Tap + to create your first task."
+              title={t("tasks.emptyTitle")}
+              message={t("tasks.emptyMessage")}
             />
           ) : (
             <EmptyState
               icon="search-outline"
-              title="No matching tasks"
-              message="Try a different search or status filter."
+              title={t("tasks.noMatchTitle")}
+              message={t("tasks.noMatchMessage")}
             />
           )
         }
@@ -132,7 +134,7 @@ export default function TasksScreen() {
       <Pressable
         onPress={() => router.push("/task/new")}
         accessibilityRole="button"
-        accessibilityLabel="Create task"
+        accessibilityLabel={t("tasks.createTask")}
         style={({ pressed }) => [
           styles.fab,
           { backgroundColor: colors.primary, opacity: pressed ? 0.8 : 1 },

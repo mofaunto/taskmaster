@@ -1,4 +1,5 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 
 import { EmptyState } from "@/components/EmptyState";
@@ -9,6 +10,7 @@ import { useTasks } from "@/store/taskStore";
 export default function EditTaskScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { t } = useTranslation();
   const { colors } = useTheme();
 
   const task = useTasks((state) => state.tasks.find((item) => item.id === id));
@@ -19,8 +21,8 @@ export default function EditTaskScreen() {
       <View style={{ flex: 1, backgroundColor: colors.background }}>
         <EmptyState
           icon="alert-circle-outline"
-          title="Task not found"
-          message="It may have been deleted."
+          title={t("task.notFoundTitle")}
+          message={t("task.notFoundMessage")}
         />
       </View>
     );
@@ -29,7 +31,7 @@ export default function EditTaskScreen() {
   return (
     <TaskForm
       initialValues={task}
-      submitLabel="Save changes"
+      submitLabel={t("form.saveChanges")}
       onSubmit={(input) => {
         updateTask(task.id, input);
         router.back();

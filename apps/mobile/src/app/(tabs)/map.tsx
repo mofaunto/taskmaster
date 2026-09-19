@@ -1,10 +1,11 @@
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useMemo, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
 import MapView, { Callout, Marker } from "react-native-maps";
 
 import { DEFAULT_REGION } from "@/constants/app";
-import { statusColors, statusLabels } from "@/constants/status";
+import { statusColors } from "@/constants/status";
 import { useTheme } from "@/hooks/useTheme";
 import { useTasks } from "@/store/taskStore";
 import { Task } from "@/types/task";
@@ -17,6 +18,7 @@ function hasLocation(task: Task): task is LocatedTask {
 
 export default function MapScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const tasks = useTasks((state) => state.tasks);
   const mapRef = useRef<MapView>(null);
@@ -55,7 +57,10 @@ export default function MapScreen() {
             key={task.id}
             coordinate={{ latitude: task.latitude, longitude: task.longitude }}
             pinColor={statusColors[task.status]}
-            accessibilityLabel={`${task.title}, ${statusLabels[task.status]}`}
+            accessibilityLabel={t("map.markerLabel", {
+              title: task.title,
+              status: t(`status.${task.status}`),
+            })}
           >
             <Callout onPress={() => router.push(`/task/${task.id}`)}>
               <View style={styles.callout}>
@@ -63,9 +68,9 @@ export default function MapScreen() {
                   {task.title}
                 </Text>
                 <Text style={styles.calloutMeta} numberOfLines={1}>
-                  {statusLabels[task.status]} · {task.address}
+                  {t(`status.${task.status}`)} · {task.address}
                 </Text>
-                <Text style={styles.calloutHint}>Tap to open</Text>
+                <Text style={styles.calloutHint}>{t("map.tapToOpen")}</Text>
               </View>
             </Callout>
           </Marker>
@@ -80,10 +85,10 @@ export default function MapScreen() {
           ]}
         >
           <Text style={[styles.bannerTitle, { color: colors.text }]}>
-            No tasks on the map yet
+            {t("map.emptyTitle")}
           </Text>
           <Text style={[styles.bannerText, { color: colors.textMuted }]}>
-            Add a map pin to a task from its form and it will show up here.
+            {t("map.emptyMessage")}
           </Text>
         </View>
       )}

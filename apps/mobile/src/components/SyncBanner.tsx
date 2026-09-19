@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useNetworkState } from "expo-network";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useTheme } from "@/hooks/useTheme";
@@ -8,6 +9,7 @@ import { syncTasks } from "@/services/sync";
 import { useTasks } from "@/store/taskStore";
 
 export function SyncBanner() {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const network = useNetworkState();
   const tasks = useTasks((state) => state.tasks);
@@ -32,7 +34,7 @@ export function SyncBanner() {
           color={colors.textMuted}
         />
         <Text style={[styles.text, { color: colors.textMuted }]}>
-          You're offline. Changes are saved on this device and will sync later.
+          {t("sync.offline")}
         </Text>
       </View>
     );
@@ -48,7 +50,7 @@ export function SyncBanner() {
     setSyncing(false);
 
     if (!result.ok) {
-      Alert.alert("Sync failed", result.error);
+      Alert.alert(t("sync.failedTitle"), result.error);
     }
   }
 
@@ -61,18 +63,17 @@ export function SyncBanner() {
     >
       <Ionicons name="cloud-upload-outline" size={18} color={colors.warning} />
       <Text style={[styles.text, { color: colors.text }]}>
-        {pendingCount} {pendingCount === 1 ? "change" : "changes"} not synced
-        yet
+        {t("sync.pendingChanges", { count: pendingCount })}
       </Text>
       <Pressable
         onPress={syncNow}
         disabled={syncing}
         accessibilityRole="button"
-        accessibilityLabel="Sync now"
+        accessibilityLabel={t("sync.syncNow")}
         hitSlop={8}
       >
         <Text style={[styles.action, { color: colors.primary }]}>
-          {syncing ? "Syncing…" : "Sync now"}
+          {syncing ? t("sync.syncing") : t("sync.syncNow")}
         </Text>
       </Pressable>
     </View>

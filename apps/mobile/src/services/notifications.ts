@@ -1,6 +1,7 @@
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 
+import i18n from "@/i18n";
 import { Task } from "@/types/task";
 import { formatTime } from "@/utils/date";
 import { getReminderDelay } from "@/utils/reminderDelay";
@@ -19,7 +20,7 @@ Notifications.setNotificationHandler({
 export async function setupNotifications() {
   if (Platform.OS === "android") {
     await Notifications.setNotificationChannelAsync(CHANNEL_ID, {
-      name: "Task reminders",
+      name: i18n.t("notifications.channelName"),
       importance: Notifications.AndroidImportance.HIGH,
     });
   }
@@ -51,8 +52,11 @@ export async function scheduleTaskReminder(
   try {
     return await Notifications.scheduleNotificationAsync({
       content: {
-        title: "Task due soon",
-        body: `${task.title} · due at ${formatTime(task.dueAt)}`,
+        title: i18n.t("notifications.reminderTitle"),
+        body: i18n.t("notifications.reminderBody", {
+          title: task.title,
+          time: formatTime(task.dueAt, i18n.language),
+        }),
         data: { taskId: task.id },
       },
       trigger: {

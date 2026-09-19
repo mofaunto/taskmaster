@@ -11,20 +11,20 @@ export function validateTask(
   const errors: TaskErrors = {};
 
   if (input.title.trim() === "") {
-    errors.title = "Title is required";
+    errors.title = "validation.titleRequired";
   }
   if (input.description.trim() === "") {
-    errors.description = "Description is required";
+    errors.description = "validation.descriptionRequired";
   }
   if (input.address.trim() === "") {
-    errors.address = "Address is required";
+    errors.address = "validation.addressRequired";
   }
 
   const due = new Date(input.dueAt);
   if (input.dueAt === "" || Number.isNaN(due.getTime())) {
-    errors.dueAt = "Due date and time are required";
+    errors.dueAt = "validation.dueRequired";
   } else if (input.dueAt !== originalDueAt && due.getTime() <= Date.now()) {
-    errors.dueAt = "Due date must be in the future";
+    errors.dueAt = "validation.dueFuture";
   }
 
   return errors;

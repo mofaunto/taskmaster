@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Alert, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -22,6 +23,7 @@ type Props = {
 const PIN_ZOOM = { latitudeDelta: 0.01, longitudeDelta: 0.01 };
 
 export function LocationPicker({ initial, onConfirm, onCancel }: Props) {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const mapRef = useRef<MapView>(null);
@@ -49,8 +51,10 @@ export function LocationPicker({ initial, onConfirm, onCancel }: Props) {
       mapRef.current?.animateToRegion({ ...coords, ...PIN_ZOOM });
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Could not get your location.";
-      Alert.alert("Location unavailable", message);
+        error instanceof Error
+          ? error.message
+          : t("location.unavailableMessage");
+      Alert.alert(t("location.unavailableTitle"), message);
     } finally {
       setLocating(false);
     }
@@ -70,12 +74,12 @@ export function LocationPicker({ initial, onConfirm, onCancel }: Props) {
           ]}
         >
           <Text style={[styles.title, { color: colors.text }]}>
-            Pick location
+            {t("location.pickLocation")}
           </Text>
           <Pressable
             onPress={onCancel}
             accessibilityRole="button"
-            accessibilityLabel="Close"
+            accessibilityLabel={t("common.close")}
             hitSlop={8}
           >
             <Ionicons name="close" size={26} color={colors.text} />
@@ -118,12 +122,14 @@ export function LocationPicker({ initial, onConfirm, onCancel }: Props) {
             {pin
               ? (pin.name ??
                 `${pin.latitude.toFixed(5)}, ${pin.longitude.toFixed(5)}`)
-              : "Tap a place or anywhere on the map to drop a pin"}
+              : t("location.hint")}
           </Text>
           <View style={styles.buttons}>
             <View style={styles.button}>
               <Button
-                title={locating ? "Locating…" : "Use my location"}
+                title={
+                  locating ? t("location.locating") : t("location.useMyLocation")
+                }
                 icon="locate-outline"
                 variant="secondary"
                 onPress={useMyLocation}
@@ -132,7 +138,7 @@ export function LocationPicker({ initial, onConfirm, onCancel }: Props) {
             </View>
             <View style={styles.button}>
               <Button
-                title="Confirm"
+                title={t("location.confirm")}
                 icon="checkmark"
                 onPress={() => pin && onConfirm(pin)}
                 disabled={!pin}

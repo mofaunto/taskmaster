@@ -6,9 +6,15 @@ export type DaySection = {
   data: HistoryEntry[];
 };
 
+export type DayLabels = {
+  today: string;
+  yesterday: string;
+  locale?: string;
+};
+
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-function dayLabel(iso: string, now: Date) {
+function dayLabel(iso: string, now: Date, labels: DayLabels) {
   const date = new Date(iso);
   const startOfDay = new Date(
     date.getFullYear(),
@@ -25,22 +31,23 @@ function dayLabel(iso: string, now: Date) {
   );
 
   if (daysAgo === 0) {
-    return "Today";
+    return labels.today;
   }
   if (daysAgo === 1) {
-    return "Yesterday";
+    return labels.yesterday;
   }
-  return formatDate(iso);
+  return formatDate(iso, labels.locale);
 }
 
 export function groupByDay(
   entries: HistoryEntry[],
   now = new Date(),
+  labels: DayLabels = { today: "Today", yesterday: "Yesterday" },
 ): DaySection[] {
   const sections: DaySection[] = [];
 
   for (const entry of entries) {
-    const title = dayLabel(entry.createdAt, now);
+    const title = dayLabel(entry.createdAt, now, labels);
     const last = sections[sections.length - 1];
 
     if (last && last.title === title) {

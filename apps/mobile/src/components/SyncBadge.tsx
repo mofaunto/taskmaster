@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
 
 import { useTheme } from "@/hooks/useTheme";
@@ -10,14 +11,11 @@ const icons = {
   failed: "cloud-offline-outline",
 } as const;
 
-const labels: Record<SyncStatus, string> = {
-  pending: "Pending sync",
-  synced: "Synced",
-  failed: "Sync failed",
-};
-
 export function SyncBadge({ status }: { status: SyncStatus }) {
+  const { t } = useTranslation();
   const { colors } = useTheme();
+
+  const label = t(`sync.${status}`);
 
   const color =
     status === "failed"
@@ -27,9 +25,9 @@ export function SyncBadge({ status }: { status: SyncStatus }) {
         : colors.textMuted;
 
   return (
-    <View style={styles.row} accessibilityLabel={labels[status]}>
+    <View style={styles.row} accessibilityLabel={label}>
       <Ionicons name={icons[status]} size={14} color={color} />
-      <Text style={[styles.text, { color }]}>{labels[status]}</Text>
+      <Text style={[styles.text, { color }]}>{label}</Text>
     </View>
   );
 }

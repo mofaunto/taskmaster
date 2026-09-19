@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { StatusBadge } from "@/components/StatusBadge";
@@ -13,6 +14,7 @@ type Props = {
 };
 
 export function TaskCard({ task, onPress }: Props) {
+  const { t, i18n } = useTranslation();
   const { colors } = useTheme();
 
   const isOpen = task.status === "new" || task.status === "in_progress";
@@ -23,7 +25,7 @@ export function TaskCard({ task, onPress }: Props) {
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={`Open task ${task.title}`}
+      accessibilityLabel={t("tasks.openTask", { title: task.title })}
       style={({ pressed }) => [
         styles.card,
         {
@@ -40,8 +42,8 @@ export function TaskCard({ task, onPress }: Props) {
       <View style={styles.row}>
         <Ionicons name="calendar-outline" size={14} color={dueColor} />
         <Text style={[styles.meta, { color: dueColor }]}>
-          {formatDateTime(task.dueAt)}
-          {overdue ? " · Overdue" : ""}
+          {formatDateTime(task.dueAt, i18n.language)}
+          {overdue ? ` · ${t("tasks.overdue")}` : ""}
         </Text>
       </View>
 

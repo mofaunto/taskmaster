@@ -1,5 +1,6 @@
 import Constants from "expo-constants";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   Linking,
@@ -11,30 +12,45 @@ import {
 } from "react-native";
 
 import { Button } from "@/components/Button";
+import { ChoiceList } from "@/components/ChoiceList";
 import { OptionSelector } from "@/components/OptionSelector";
 import { Section } from "@/components/Section";
 import { TextField } from "@/components/TextField";
-import { APP_NAME, DEMO_SECONDS } from "@/constants/app";
+import { APP_NAME, DEMO_SECONDS, REMINDER_MINUTES } from "@/constants/app";
 import { useTheme } from "@/hooks/useTheme";
+import { languageNames, languages } from "@/i18n";
 import { ping } from "@/services/api";
 import {
   getNotificationPermission,
   requestNotificationPermission,
 } from "@/services/notifications";
 import { syncTasks } from "@/services/sync";
-import { ThemeSetting, useSettings } from "@/store/settingsStore";
+import {
+  LanguageSetting,
+  ThemeSetting,
+  useSettings,
+} from "@/store/settingsStore";
 import { formatDateTime } from "@/utils/date";
 
-const themeOptions: { label: string; value: ThemeSetting }[] = [
-  { label: "System", value: "system" },
-  { label: "Light", value: "light" },
-  { label: "Dark", value: "dark" },
-];
-
 export default function SettingsScreen() {
+  const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const theme = useSettings((state) => state.theme);
   const setTheme = useSettings((state) => state.setTheme);
+  const language = useSettings((state) => state.language);
+  const setLanguage = useSettings((state) => state.setLanguage);
+
+  const themeOptions: { label: string; value: ThemeSetting }[] = [
+    { label: t("settings.themeSystem"), value: "system" },
+    { label: t("settings.themeLight"), value: "light" },
+    { label: t("settings.themeDark"), value: "dark" },
+  ];
+
+  // Language names stay in their own language, the way every app lists them.
+  const languageOptions: { label: string; value: LanguageSetting }[] = [
+    { label: t("settings.languageSystem"), value: "system" },
+    ...languages.map((code) => ({ label: languageNames[code], value: code })),
+  ];
   const demoReminders = useSettings((state) => state.demoReminders);
   const setDemoReminders = useSettings((state) => state.setDemoReminders);
   const apiUrl = useSettings((state) => state.apiUrl);
@@ -48,10 +64,14 @@ export default function SettingsScreen() {
     setBusy("test");
     try {
       await ping();
-      Alert.alert("Connected", "The server answered.");
+      Alert.alert(
+        t("settings.connectedTitle"),
+        t("settings.connectedMessage"),
+      );
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unknown error";
-      Alert.alert("Not connected", message);
+      const message =
+        error instanceof Error ? error.message : t("common.unknownError");
+      Alert.alert(t("settings.notConnectedTitle"), message);
     } finally {
       setBusy(null);
     }
@@ -63,9 +83,15 @@ export default function SettingsScreen() {
     setBusy(null);
 
     if (result.ok) {
-      Alert.alert("Synced", `${result.sent} sent, ${result.received} received.`);
+      Alert.alert(
+        t("sync.successTitle"),
+        t("sync.successMessage", {
+          sent: result.sent,
+          received: result.received,
+        }),
+      );
     } else {
-      Alert.alert("Sync failed", result.error);
+      Alert.alert(t("sync.failedTitle"), result.error);
     }
   }
 
@@ -91,8 +117,10 @@ export default function SettingsScreen() {
       style={{ backgroundColor: colors.background }}
       contentContainerStyle={styles.content}
     >
-      <Section title="Appearance">
-        <Text style={[styles.label, { color: colors.text }]}>Theme</Text>
+      <Section title={t("settings.appearance")}>
+        <Text style={[styles.label, { color: colors.text }]}>
+          {t("settings.theme")}
+        </Text>
         <OptionSelector
           options={themeOptions}
           value={theme}
@@ -100,45 +128,61 @@ export default function SettingsScreen() {
         />
       </Section>
 
-      <Section title="Reminders">
+      <Section title={t("settings.language")}>
+        <ChoiceList
+          options={languageOptions}
+          value={language}
+          onChange={setLanguage}
+        />
+      </Section>
+
+      <Section title={t("settings.reminders")}>
         <View style={styles.row}>
           <View style={styles.rowText}>
             <Text style={[styles.label, { color: colors.text }]}>
-              Notifications
+              {t("settings.notifications")}
             </Text>
             <Text style={[styles.hint, { color: colors.textMuted }]}>
               {notificationsAllowed === null
-                ? "Checking…"
+                ? t("settings.checking")
                 : notificationsAllowed
-                  ? "Allowed"
-                  : "Not allowed — reminders will not show"}
+                  ? t("settings.allowed")
+                  : t("settings.notAllowed")}
             </Text>
           </View>
           {notificationsAllowed === false && (
-            <Button title="Enable" variant="secondary" onPress={enableNotifications} />
+            <Button
+              title={t("settings.enable")}
+              variant="secondary"
+              onPress={enableNotifications}
+            />
           )}
         </View>
 
         <View style={styles.row}>
           <View style={styles.rowText}>
-            <Text style={[styles.label, { color: colors.text }]}>Demo mode</Text>
+            <Text style={[styles.label, { color: colors.text }]}>
+              {t("settings.demoMode")}
+            </Text>
             <Text style={[styles.hint, { color: colors.textMuted }]}>
-              Reminder fires {DEMO_SECONDS} s after saving a task instead of 30
-              min before it is due
+              {t("settings.demoHint", {
+                seconds: DEMO_SECONDS,
+                minutes: REMINDER_MINUTES,
+              })}
             </Text>
           </View>
           <Switch
             value={demoReminders}
             onValueChange={setDemoReminders}
             trackColor={{ true: colors.primary }}
-            accessibilityLabel="Demo reminders"
+            accessibilityLabel={t("settings.demoMode")}
           />
         </View>
       </Section>
 
-      <Section title="Server">
+      <Section title={t("settings.server")}>
         <TextField
-          label="Server URL"
+          label={t("settings.serverUrl")}
           value={apiUrl}
           onChangeText={setApiUrl}
           placeholder="http://192.168.1.10:3000"
@@ -147,13 +191,20 @@ export default function SettingsScreen() {
           keyboardType="url"
         />
         <Text style={[styles.hint, { color: colors.textMuted }]}>
-          Use your computer&apos;s LAN address, not localhost. Last sync:{" "}
-          {lastSyncAt ? formatDateTime(lastSyncAt) : "never"}
+          {t("settings.serverHint", {
+            lastSync: lastSyncAt
+              ? formatDateTime(lastSyncAt, i18n.language)
+              : t("settings.never"),
+          })}
         </Text>
         <View style={styles.row}>
           <View style={styles.rowButton}>
             <Button
-              title={busy === "test" ? "Testing…" : "Test connection"}
+              title={
+                busy === "test"
+                  ? t("settings.testing")
+                  : t("settings.testConnection")
+              }
               variant="secondary"
               onPress={testConnection}
               disabled={busy !== null}
@@ -161,7 +212,7 @@ export default function SettingsScreen() {
           </View>
           <View style={styles.rowButton}>
             <Button
-              title={busy === "sync" ? "Syncing…" : "Sync now"}
+              title={busy === "sync" ? t("sync.syncing") : t("sync.syncNow")}
               icon="sync-outline"
               onPress={syncNow}
               disabled={busy !== null}
@@ -170,15 +221,19 @@ export default function SettingsScreen() {
         </View>
       </Section>
 
-      <Section title="About">
+      <Section title={t("settings.about")}>
         <View style={styles.row}>
-          <Text style={[styles.label, { color: colors.text }]}>App</Text>
+          <Text style={[styles.label, { color: colors.text }]}>
+            {t("settings.app")}
+          </Text>
           <Text style={[styles.value, { color: colors.textMuted }]}>
             {APP_NAME}
           </Text>
         </View>
         <View style={styles.row}>
-          <Text style={[styles.label, { color: colors.text }]}>Version</Text>
+          <Text style={[styles.label, { color: colors.text }]}>
+            {t("settings.version")}
+          </Text>
           <Text style={[styles.value, { color: colors.textMuted }]}>
             {version}
           </Text>

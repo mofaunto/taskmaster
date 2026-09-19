@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-import { statusLabels } from "@/constants/status";
 import { deleteAttachmentFile } from "@/services/attachments";
 import {
   cancelTaskReminder,
@@ -11,7 +10,7 @@ import { appStorage } from "@/storage/appStorage";
 import { useHistory } from "@/store/historyStore";
 import { useSettings } from "@/store/settingsStore";
 import { Attachment, Task, TaskInput, TaskStatus } from "@/types/task";
-import { formatDateTime, nowIso } from "@/utils/date";
+import { nowIso } from "@/utils/date";
 import { newId } from "@/utils/id";
 
 type TaskState = {
@@ -53,7 +52,7 @@ export const useTasks = create<TaskState>()(
           taskId: task.id,
           taskTitle: task.title,
           action: "created",
-          description: `Created, due ${formatDateTime(task.dueAt)}`,
+          meta: { due: task.dueAt },
         });
 
         updateReminder(task);
@@ -81,7 +80,6 @@ export const useTasks = create<TaskState>()(
           taskId: id,
           taskTitle: input.title,
           action: "updated",
-          description: "Details edited",
         });
 
         updateReminder(updated);
@@ -108,7 +106,7 @@ export const useTasks = create<TaskState>()(
           taskId: id,
           taskTitle: task.title,
           action: "status_changed",
-          description: `${statusLabels[task.status]} → ${statusLabels[status]}`,
+          meta: { from: task.status, to: status },
         });
 
         updateReminder(updated);
@@ -134,7 +132,6 @@ export const useTasks = create<TaskState>()(
           taskId: null,
           taskTitle: task.title,
           action: "deleted",
-          description: "Task deleted",
         });
       },
 
@@ -161,7 +158,7 @@ export const useTasks = create<TaskState>()(
           taskId,
           taskTitle: task.title,
           action: "attachment_added",
-          description: `Attached ${attachment.name}`,
+          meta: { name: attachment.name },
         });
       },
 
@@ -195,7 +192,7 @@ export const useTasks = create<TaskState>()(
           taskId,
           taskTitle: task.title,
           action: "attachment_removed",
-          description: `Removed ${attachment.name}`,
+          meta: { name: attachment.name },
         });
       },
 
@@ -238,6 +235,10 @@ export const useTasks = create<TaskState>()(
     },
   ),
 );
+
+export function rescheduleAllReminders() {
+  useTasks.getState().tasks.forEach(updateReminder);
+}
 
 async function updateReminder(task: Task) {
   if (task.notificationId) {

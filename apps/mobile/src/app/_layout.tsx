@@ -9,7 +9,9 @@ import {
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
+import { useLanguage } from "@/hooks/useLanguage";
 import { useNetworkSync } from "@/hooks/useNetworkSync";
 import { useTheme } from "@/hooks/useTheme";
 import { setupNotifications } from "@/services/notifications";
@@ -20,12 +22,14 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { colors, isDark } = useTheme();
   const settingsReady = useSettings((state) => state.hydrated);
   const tasksReady = useTasks((state) => state.hydrated);
   const hydrated = settingsReady && tasksReady;
   const notificationResponse = useLastNotificationResponse();
 
+  useLanguage();
   useNetworkSync();
 
   useEffect(() => {
@@ -67,9 +71,12 @@ export default function RootLayout() {
     <ThemeProvider value={navigationTheme}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="task/new" options={{ title: "New Task" }} />
-        <Stack.Screen name="task/[id]/index" options={{ title: "Task" }} />
-        <Stack.Screen name="task/[id]/edit" options={{ title: "Edit Task" }} />
+        <Stack.Screen name="task/new" options={{ title: t("screens.newTask") }} />
+        <Stack.Screen name="task/[id]/index" options={{ title: t("screens.task") }} />
+        <Stack.Screen
+          name="task/[id]/edit"
+          options={{ title: t("screens.editTask") }}
+        />
       </Stack>
       <StatusBar style={isDark ? "light" : "dark"} />
     </ThemeProvider>

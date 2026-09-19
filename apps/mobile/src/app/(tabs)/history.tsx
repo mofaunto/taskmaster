@@ -1,4 +1,5 @@
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { SectionList, StyleSheet, Text, View } from "react-native";
 
 import { EmptyState } from "@/components/EmptyState";
@@ -10,12 +11,17 @@ import { groupByDay } from "@/utils/groupByDay";
 
 export default function HistoryScreen() {
   const router = useRouter();
+  const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const entries = useHistory((state) => state.entries);
   const tasks = useTasks((state) => state.tasks);
 
   const existingTaskIds = new Set(tasks.map((task) => task.id));
-  const sections = groupByDay(entries);
+  const sections = groupByDay(entries, new Date(), {
+    today: t("history.today"),
+    yesterday: t("history.yesterday"),
+    locale: i18n.language,
+  });
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.background }]}>
@@ -57,8 +63,8 @@ export default function HistoryScreen() {
         ListEmptyComponent={
           <EmptyState
             icon="time-outline"
-            title="No history yet"
-            message="Creating, editing and syncing tasks will show up here."
+            title={t("history.emptyTitle")}
+            message={t("history.emptyMessage")}
           />
         }
       />

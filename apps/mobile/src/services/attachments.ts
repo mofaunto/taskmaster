@@ -2,6 +2,7 @@ import * as DocumentPicker from "expo-document-picker";
 import { Directory, File, Paths } from "expo-file-system";
 import * as ImagePicker from "expo-image-picker";
 
+import i18n from "@/i18n";
 import { Attachment } from "@/types/task";
 import { newId } from "@/utils/id";
 
@@ -25,7 +26,7 @@ async function saveAttachment(
 export async function takePhoto(): Promise<Attachment | null> {
   const permission = await ImagePicker.requestCameraPermissionsAsync();
   if (!permission.granted) {
-    throw new Error("Camera access was denied. You can enable it in Settings.");
+    throw new Error(i18n.t("attachments.cameraDenied"));
   }
 
   const result = await ImagePicker.launchCameraAsync({ quality: 0.7 });
@@ -45,7 +46,7 @@ export async function takePhoto(): Promise<Attachment | null> {
 export async function pickImage(): Promise<Attachment | null> {
   const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (!permission.granted) {
-    throw new Error("Photo access was denied. You can enable it in Settings.");
+    throw new Error(i18n.t("attachments.photosDenied"));
   }
 
   const result = await ImagePicker.launchImageLibraryAsync({

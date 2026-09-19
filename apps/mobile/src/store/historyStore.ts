@@ -12,7 +12,7 @@ type NewEntry = {
   taskId: string | null;
   taskTitle: string;
   action: HistoryAction;
-  description: string;
+  meta?: Record<string, string | number>;
 };
 
 type HistoryState = {

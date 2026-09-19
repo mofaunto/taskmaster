@@ -1,14 +1,16 @@
+import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
 
-import { statusColors, statusLabels } from "@/constants/status";
+import { statusColors } from "@/constants/status";
 import { TaskStatus } from "@/types/task";
 
 export function StatusBadge({ status }: { status: TaskStatus }) {
+  const { t } = useTranslation();
   const color = statusColors[status];
 
   return (
     <View style={[styles.badge, { backgroundColor: color + "22" }]}>
-      <Text style={[styles.text, { color }]}>{statusLabels[status]}</Text>
+      <Text style={[styles.text, { color }]}>{t(`status.${status}`)}</Text>
     </View>
   );
 }

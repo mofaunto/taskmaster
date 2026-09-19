@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -37,6 +38,7 @@ type FormValues = {
 };
 
 export function TaskForm({ initialValues, submitLabel, onSubmit }: Props) {
+  const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const demoReminders = useSettings((state) => state.demoReminders);
 
@@ -122,11 +124,11 @@ export function TaskForm({ initialValues, submitLabel, onSubmit }: Props) {
     ? (values.dueAt.getTime() - Date.now()) / 60000
     : null;
   const reminderNote = demoReminders
-    ? `Demo mode is on: the reminder fires ${DEMO_SECONDS} s after saving.`
+    ? t("form.demoNote", { seconds: DEMO_SECONDS })
     : minutesUntilDue !== null &&
         minutesUntilDue > 0 &&
         minutesUntilDue < REMINDER_MINUTES
-      ? `Less than ${REMINDER_MINUTES} min away: the reminder will fire in about a minute.`
+      ? t("form.dueSoonNote", { minutes: REMINDER_MINUTES })
       : null;
 
   return (
@@ -139,32 +141,34 @@ export function TaskForm({ initialValues, submitLabel, onSubmit }: Props) {
         keyboardShouldPersistTaps="handled"
       >
         <TextField
-          label="Title"
+          label={t("form.title")}
           value={values.title}
           onChangeText={(text) => setField("title", text)}
-          placeholder="What needs to be done?"
-          error={errors.title}
+          placeholder={t("form.titlePlaceholder")}
+          error={errors.title && t(errors.title)}
           maxLength={100}
         />
 
         <TextField
-          label="Description"
+          label={t("form.description")}
           value={values.description}
           onChangeText={(text) => setField("description", text)}
-          placeholder="Details for the technician"
-          error={errors.description}
+          placeholder={t("form.descriptionPlaceholder")}
+          error={errors.description && t(errors.description)}
           multiline
           numberOfLines={4}
           style={styles.multiline}
         />
 
         <View style={styles.field}>
-          <Text style={[styles.label, { color: colors.text }]}>Due</Text>
+          <Text style={[styles.label, { color: colors.text }]}>
+            {t("form.due")}
+          </Text>
           <View style={styles.dueRow}>
             <Pressable
               onPress={() => setPicker("date")}
               accessibilityRole="button"
-              accessibilityLabel="Pick due date"
+              accessibilityLabel={t("form.pickDateLabel")}
               style={[styles.pickerButton, pickerStyle]}
             >
               <Ionicons
@@ -178,13 +182,13 @@ export function TaskForm({ initialValues, submitLabel, onSubmit }: Props) {
                   { color: dueIso ? colors.text : colors.textMuted },
                 ]}
               >
-                {dueIso ? formatDate(dueIso) : "Pick date"}
+                {dueIso ? formatDate(dueIso, i18n.language) : t("form.pickDate")}
               </Text>
             </Pressable>
             <Pressable
               onPress={() => setPicker("time")}
               accessibilityRole="button"
-              accessibilityLabel="Pick due time"
+              accessibilityLabel={t("form.pickTimeLabel")}
               style={[styles.pickerButton, pickerStyle]}
             >
               <Ionicons
@@ -198,13 +202,13 @@ export function TaskForm({ initialValues, submitLabel, onSubmit }: Props) {
                   { color: dueIso ? colors.text : colors.textMuted },
                 ]}
               >
-                {dueIso ? formatTime(dueIso) : "Pick time"}
+                {dueIso ? formatTime(dueIso, i18n.language) : t("form.pickTime")}
               </Text>
             </Pressable>
           </View>
           {errors.dueAt && (
             <Text style={[styles.error, { color: colors.danger }]}>
-              {errors.dueAt}
+              {t(errors.dueAt)}
             </Text>
           )}
           {!errors.dueAt && reminderNote && (
@@ -216,7 +220,7 @@ export function TaskForm({ initialValues, submitLabel, onSubmit }: Props) {
 
         <View style={styles.field}>
           <Text style={[styles.label, { color: colors.text }]}>
-            Map pin (optional)
+            {t("form.mapPin")}
           </Text>
           {values.location ? (
             <View
@@ -233,17 +237,17 @@ export function TaskForm({ initialValues, submitLabel, onSubmit }: Props) {
               <Pressable
                 onPress={() => setMapOpen(true)}
                 accessibilityRole="button"
-                accessibilityLabel="Change map pin"
+                accessibilityLabel={t("form.changePin")}
                 hitSlop={8}
               >
                 <Text style={[styles.pinAction, { color: colors.primary }]}>
-                  Change
+                  {t("common.change")}
                 </Text>
               </Pressable>
               <Pressable
                 onPress={() => setField("location", null)}
                 accessibilityRole="button"
-                accessibilityLabel="Remove map pin"
+                accessibilityLabel={t("form.removePin")}
                 hitSlop={8}
               >
                 <Ionicons
@@ -255,7 +259,7 @@ export function TaskForm({ initialValues, submitLabel, onSubmit }: Props) {
             </View>
           ) : (
             <Button
-              title="Pick on map"
+              title={t("form.pickOnMap")}
               icon="map-outline"
               variant="secondary"
               onPress={() => setMapOpen(true)}
@@ -264,16 +268,18 @@ export function TaskForm({ initialValues, submitLabel, onSubmit }: Props) {
         </View>
 
         <TextField
-          label="Address"
+          label={t("form.address")}
           value={values.address}
           onChangeText={(text) => {
             setField("address", text);
             setAddressFromPin(false);
           }}
           placeholder={
-            lookingUpAddress ? "Looking up address…" : "Street, building, city"
+            lookingUpAddress
+              ? t("form.lookingUpAddress")
+              : t("form.addressPlaceholder")
           }
-          error={errors.address}
+          error={errors.address && t(errors.address)}
         />
 
         <Button title={submitLabel} onPress={handleSubmit} />

@@ -1,3 +1,4 @@
+import i18n from "@/i18n";
 import { useSettings } from "@/store/settingsStore";
 import { ServerTask, Task } from "@/types/task";
 
@@ -19,9 +20,9 @@ async function send(path: string, options: RequestInit = {}) {
     });
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
-      throw new Error("Server did not respond in time");
+      throw new Error(i18n.t("api.timeout"));
     }
-    throw new Error("Could not reach the server");
+    throw new Error(i18n.t("api.unreachable"));
   } finally {
     clearTimeout(timer);
   }
@@ -30,7 +31,7 @@ async function send(path: string, options: RequestInit = {}) {
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const response = await send(path, options);
   if (!response.ok) {
-    throw new Error(`Server responded with ${response.status}`);
+    throw new Error(i18n.t("api.status", { status: response.status }));
   }
   return response.json();
 }
@@ -61,7 +62,7 @@ export function updateTask(task: Task) {
 export async function deleteTask(id: string) {
   const response = await send(`/tasks/${id}`, { method: "DELETE" });
   if (!response.ok && response.status !== 404) {
-    throw new Error(`Server responded with ${response.status}`);
+    throw new Error(i18n.t("api.status", { status: response.status }));
   }
 }
 
