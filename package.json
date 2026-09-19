@@ -7,7 +7,7 @@
     "packages/*"
   ],
   "scripts": {
-    "mobile": "npm run start --workspace @taskmaster/mobile",
+    "mobile": "cd apps/mobile && expo start",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present"
   },
